@@ -1,11 +1,13 @@
+
 import React, { useEffect, useRef, useState } from 'react';
-import { Heart, Bookmark, ChevronLeft, ChevronRight, Linkedin, Github, Instagram, Mail } from 'lucide-react';
+import { Heart, Bookmark, ArrowLeft, Github, Instagram, Mail, Linkedin } from 'lucide-react';
 
 const Index = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [userLikes, setUserLikes] = useState<{ [key: number]: boolean }>({});
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
   // Gallery images with more variety for better layout
   const images = [
@@ -89,12 +91,16 @@ const Index = () => {
   };
 
   const nextSlide = () => {
+    setSwipeDirection('right');
+    setTimeout(() => setSwipeDirection(null), 300);
     const nextIndex = (currentSlideIndex + 1) % images.length;
     setCurrentSlideIndex(nextIndex);
     setSelectedImage(images[nextIndex].id);
   };
 
   const prevSlide = () => {
+    setSwipeDirection('left');
+    setTimeout(() => setSwipeDirection(null), 300);
     const prevIndex = currentSlideIndex === 0 ? images.length - 1 : currentSlideIndex - 1;
     setCurrentSlideIndex(prevIndex);
     setSelectedImage(images[prevIndex].id);
@@ -240,7 +246,7 @@ const Index = () => {
                   {image.title}
                 </h3>
                 
-                {/* Like Button */}
+                {/* Like and Save Buttons */}
                 <div className="mt-3 flex items-center justify-between">
                   <button
                     onClick={(e) => handleLike(image.id, e)}
@@ -275,26 +281,63 @@ const Index = () => {
           className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
           onClick={() => setSelectedImage(null)}
         >
-          <div className="relative max-w-4xl max-h-full w-full">
-            {/* Navigation Buttons */}
+          <div className="relative max-w-4xl max-h-full w-full flex items-center justify-center">
+            {/* Dynamic Left Navigation */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 prevSlide();
               }}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all duration-200 hover:scale-110"
+              className={`absolute left-8 top-1/2 transform -translate-y-1/2 z-10 w-20 h-20 transition-all duration-300 hover:scale-110 ${
+                swipeDirection === 'left' ? 'animate-pulse scale-110' : ''
+              }`}
             >
-              <ChevronLeft className="w-6 h-6" />
+              <div className="relative w-full h-full">
+                {/* Outer rotating ring */}
+                <div className="absolute inset-0 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '4s' }}>
+                  <div className="absolute top-0 left-1/2 w-1 h-1 bg-blue-400 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+                  <div className="absolute bottom-0 left-1/2 w-1 h-1 bg-blue-500 rounded-full transform -translate-x-1/2 translate-y-1/2" />
+                </div>
+                
+                {/* Middle pulsing ring */}
+                <div className="absolute inset-2 rounded-full bg-gradient-to-r from-blue-600/20 to-blue-400/20 backdrop-blur-sm animate-pulse border border-blue-400/50">
+                  <div className="absolute inset-1 rounded-full bg-black/40 flex items-center justify-center">
+                    <ArrowLeft className="w-6 h-6 text-blue-400" />
+                  </div>
+                </div>
+                
+                {/* Inner glow effect */}
+                <div className="absolute inset-4 rounded-full bg-blue-400/10 animate-ping" style={{ animationDuration: '2s' }} />
+              </div>
             </button>
             
+            {/* Dynamic Right Navigation */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 nextSlide();
               }}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all duration-200 hover:scale-110"
+              className={`absolute right-8 top-1/2 transform -translate-y-1/2 z-10 w-20 h-20 transition-all duration-300 hover:scale-110 ${
+                swipeDirection === 'right' ? 'animate-pulse scale-110' : ''
+              }`}
             >
-              <ChevronRight className="w-6 h-6" />
+              <div className="relative w-full h-full">
+                {/* Outer rotating ring */}
+                <div className="absolute inset-0 rounded-full border-2 border-blue-400/30 animate-spin" style={{ animationDuration: '4s', animationDirection: 'reverse' }}>
+                  <div className="absolute top-0 left-1/2 w-1 h-1 bg-blue-400 rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+                  <div className="absolute bottom-0 left-1/2 w-1 h-1 bg-blue-500 rounded-full transform -translate-x-1/2 translate-y-1/2" />
+                </div>
+                
+                {/* Middle pulsing ring */}
+                <div className="absolute inset-2 rounded-full bg-gradient-to-r from-blue-600/20 to-blue-400/20 backdrop-blur-sm animate-pulse border border-blue-400/50">
+                  <div className="absolute inset-1 rounded-full bg-black/40 flex items-center justify-center">
+                    <ArrowLeft className="w-6 h-6 text-blue-400 transform rotate-180" />
+                  </div>
+                </div>
+                
+                {/* Inner glow effect */}
+                <div className="absolute inset-4 rounded-full bg-blue-400/10 animate-ping" style={{ animationDuration: '2s' }} />
+              </div>
             </button>
 
             {/* Current Image */}
@@ -304,22 +347,22 @@ const Index = () => {
               className="max-w-full max-h-full object-contain rounded-xl border border-blue-500/30 shadow-2xl shadow-blue-500/20 transition-transform duration-300"
             />
             
-            {/* Close Button */}
+            {/* Back Button in Top Right */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 w-8 h-8 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center text-white transition-colors duration-200"
+              className="absolute top-6 right-6 w-12 h-12 bg-blue-600/80 hover:bg-blue-600 rounded-full flex items-center justify-center text-white transition-all duration-200 hover:scale-110 border border-blue-400/50"
             >
-              ×
+              <ArrowLeft className="w-5 h-5" />
             </button>
             
             {/* Image Info */}
-            <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2">
+            <div className="absolute bottom-6 left-6 bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 border border-blue-500/30">
               <h3 className="text-white font-semibold">{images[currentSlideIndex]?.title}</h3>
               <p className="text-blue-400 text-sm">{images[currentSlideIndex]?.category}</p>
             </div>
 
             {/* Slide Counter */}
-            <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1">
+            <div className="absolute bottom-6 right-6 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1 border border-blue-500/30">
               <span className="text-white text-sm">
                 {currentSlideIndex + 1} / {images.length}
               </span>
