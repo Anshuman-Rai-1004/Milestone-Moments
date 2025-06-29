@@ -1,11 +1,10 @@
-
 import React, { useEffect, useRef, useState } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, Bookmark, ChevronLeft, ChevronRight, Linkedin, Github, Instagram, Mail } from 'lucide-react';
 
 const Index = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
-  const [likes, setLikes] = useState<{ [key: number]: number }>({});
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [userLikes, setUserLikes] = useState<{ [key: number]: boolean }>({});
 
   // Gallery images with more variety for better layout
@@ -63,41 +62,42 @@ const Index = () => {
       src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=600&fit=crop",
       title: "Digital Horizon",
       category: "Space"
-    },
-    {
-      id: 10,
-      src: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=600&fit=crop",
-      title: "Innovation Lab",
-      category: "Technology"
     }
   ];
 
-  // Initialize likes with random values
+  // Initialize user likes
   useEffect(() => {
-    const initialLikes: { [key: number]: number } = {};
     const initialUserLikes: { [key: number]: boolean } = {};
-    
     images.forEach(image => {
-      initialLikes[image.id] = Math.floor(Math.random() * 500) + 50;
       initialUserLikes[image.id] = false;
     });
-    
-    setLikes(initialLikes);
     setUserLikes(initialUserLikes);
   }, []);
 
   const handleLike = (imageId: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    
     setUserLikes(prev => ({
       ...prev,
       [imageId]: !prev[imageId]
     }));
-    
-    setLikes(prev => ({
-      ...prev,
-      [imageId]: prev[imageId] + (userLikes[imageId] ? -1 : 1)
-    }));
+  };
+
+  const openSlideshow = (imageId: number) => {
+    const index = images.findIndex(img => img.id === imageId);
+    setCurrentSlideIndex(index);
+    setSelectedImage(imageId);
+  };
+
+  const nextSlide = () => {
+    const nextIndex = (currentSlideIndex + 1) % images.length;
+    setCurrentSlideIndex(nextIndex);
+    setSelectedImage(images[nextIndex].id);
+  };
+
+  const prevSlide = () => {
+    const prevIndex = currentSlideIndex === 0 ? images.length - 1 : currentSlideIndex - 1;
+    setCurrentSlideIndex(prevIndex);
+    setSelectedImage(images[prevIndex].id);
   };
 
   // Particle animation effect with new color scheme
@@ -120,7 +120,6 @@ const Index = () => {
       opacity: number;
     }> = [];
 
-    // Create particles
     for (let i = 0; i < 50; i++) {
       particles.push({
         x: Math.random() * canvas.width,
@@ -147,7 +146,6 @@ const Index = () => {
         ctx.fillStyle = `rgba(0, 127, 255, ${particle.opacity})`;
         ctx.fill();
 
-        // Draw connections
         particles.slice(index + 1).forEach(otherParticle => {
           const dx = particle.x - otherParticle.x;
           const dy = particle.y - otherParticle.y;
@@ -199,17 +197,17 @@ const Index = () => {
         <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-blue-600 mx-auto mt-4 rounded-full animate-pulse" />
       </header>
 
-      {/* Gallery Grid */}
+      {/* Gallery Grid - Updated to 3 columns */}
       <main className="relative z-20 p-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {images.map((image, index) => (
             <div
               key={image.id}
-              className="group relative overflow-hidden rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-blue-500/20 hover:border-blue-400/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 animate-fadeInUp"
+              className="group relative overflow-hidden rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-blue-500/20 hover:border-blue-400/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 animate-fadeInUp cursor-pointer"
               style={{
                 animationDelay: `${index * 0.1}s`
               }}
-              onClick={() => setSelectedImage(image.id)}
+              onClick={() => openSlideshow(image.id)}
             >
               {/* Image Container */}
               <div className="relative overflow-hidden aspect-square">
@@ -255,12 +253,9 @@ const Index = () => {
                           : 'text-gray-400 hover:text-red-400'
                       }`}
                     />
-                    <span className="text-sm text-gray-300 font-mono">
-                      {likes[image.id] || 0}
-                    </span>
                   </button>
-                  <div className="text-xs text-blue-400 font-mono">
-                    ▶ MOMENT_SAVED
+                  <div className="text-xs text-blue-400 font-mono flex items-center space-x-1">
+                    <Bookmark className="w-4 h-4" />
                   </div>
                 </div>
               </div>
@@ -274,18 +269,42 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Modal for Selected Image */}
+      {/* Image Slideshow Modal */}
       {selectedImage && (
         <div 
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
           onClick={() => setSelectedImage(null)}
         >
-          <div className="relative max-w-4xl max-h-full">
+          <div className="relative max-w-4xl max-h-full w-full">
+            {/* Navigation Buttons */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                prevSlide();
+              }}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all duration-200 hover:scale-110"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nextSlide();
+              }}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-all duration-200 hover:scale-110"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+
+            {/* Current Image */}
             <img
-              src={images.find(img => img.id === selectedImage)?.src}
-              alt={images.find(img => img.id === selectedImage)?.title}
-              className="max-w-full max-h-full object-contain rounded-xl border border-blue-500/30 shadow-2xl shadow-blue-500/20"
+              src={images[currentSlideIndex]?.src}
+              alt={images[currentSlideIndex]?.title}
+              className="max-w-full max-h-full object-contain rounded-xl border border-blue-500/30 shadow-2xl shadow-blue-500/20 transition-transform duration-300"
             />
+            
+            {/* Close Button */}
             <button
               onClick={() => setSelectedImage(null)}
               className="absolute top-4 right-4 w-8 h-8 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center text-white transition-colors duration-200"
@@ -293,27 +312,97 @@ const Index = () => {
               ×
             </button>
             
-            {/* Modal Like Button */}
-            <div className="absolute bottom-4 left-4 flex items-center space-x-3">
-              <button
-                onClick={(e) => handleLike(selectedImage, e)}
-                className="flex items-center space-x-2 bg-black/50 backdrop-blur-sm rounded-full px-4 py-2 transition-all duration-200 hover:scale-110"
-              >
-                <Heart
-                  className={`w-6 h-6 transition-colors duration-200 ${
-                    userLikes[selectedImage] 
-                      ? 'text-red-500 fill-red-500' 
-                      : 'text-gray-400 hover:text-red-400'
-                  }`}
-                />
-                <span className="text-lg text-white font-mono">
-                  {likes[selectedImage] || 0}
-                </span>
-              </button>
+            {/* Image Info */}
+            <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2">
+              <h3 className="text-white font-semibold">{images[currentSlideIndex]?.title}</h3>
+              <p className="text-blue-400 text-sm">{images[currentSlideIndex]?.category}</p>
+            </div>
+
+            {/* Slide Counter */}
+            <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1">
+              <span className="text-white text-sm">
+                {currentSlideIndex + 1} / {images.length}
+              </span>
             </div>
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <footer className="relative z-20 mt-16 border-t border-blue-500/20 bg-gray-900/50 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-8 py-8">
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent mb-2">
+              Let's Connect!
+            </h3>
+            <p className="text-gray-300">Follow me on various platforms</p>
+          </div>
+          
+          <div className="flex justify-center space-x-6">
+            <a
+              href="https://linkedin.com/in/yourprofile"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-12 h-12 bg-blue-600/20 hover:bg-blue-600/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group"
+            >
+              <Linkedin className="w-6 h-6 text-blue-400 group-hover:text-blue-300" />
+            </a>
+            
+            <a
+              href="https://github.com/yourusername"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-12 h-12 bg-gray-600/20 hover:bg-gray-600/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group"
+            >
+              <Github className="w-6 h-6 text-gray-400 group-hover:text-gray-300" />
+            </a>
+            
+            <a
+              href="https://instagram.com/yourusername"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-12 h-12 bg-pink-600/20 hover:bg-pink-600/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group"
+            >
+              <Instagram className="w-6 h-6 text-pink-400 group-hover:text-pink-300" />
+            </a>
+            
+            <a
+              href="https://leetcode.com/yourusername"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-12 h-12 bg-orange-600/20 hover:bg-orange-600/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group"
+            >
+              <div className="w-6 h-6 text-orange-400 group-hover:text-orange-300 font-bold text-sm flex items-center justify-center">
+                LC
+              </div>
+            </a>
+            
+            <a
+              href="https://hackerrank.com/yourusername"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-12 h-12 bg-green-600/20 hover:bg-green-600/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group"
+            >
+              <div className="w-6 h-6 text-green-400 group-hover:text-green-300 font-bold text-sm flex items-center justify-center">
+                HR
+              </div>
+            </a>
+            
+            <a
+              href="mailto:your.email@example.com"
+              className="w-12 h-12 bg-red-600/20 hover:bg-red-600/40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group"
+            >
+              <Mail className="w-6 h-6 text-red-400 group-hover:text-red-300" />
+            </a>
+          </div>
+          
+          <div className="text-center mt-8 pt-6 border-t border-blue-500/10">
+            <p className="text-gray-400 text-sm">
+              © 2024 Milestone-Moments. Crafted with passion and code.
+            </p>
+          </div>
+        </div>
+      </footer>
 
       {/* Floating Elements */}
       <div className="fixed top-20 right-8 z-30 space-y-4">
