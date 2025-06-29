@@ -1,10 +1,14 @@
+
 import React, { useEffect, useRef, useState } from 'react';
+import { Heart } from 'lucide-react';
 
 const Index = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [likes, setLikes] = useState<{ [key: number]: number }>({});
+  const [userLikes, setUserLikes] = useState<{ [key: number]: boolean }>({});
 
-  // Gallery images with dark/tech themes
+  // Gallery images with more variety for better layout
   const images = [
     {
       id: 1,
@@ -47,10 +51,56 @@ const Index = () => {
       src: "https://images.unsplash.com/photo-1494891848038-7bd202a2afeb?w=800&h=600&fit=crop",
       title: "Urban Geometry",
       category: "Architecture"
+    },
+    {
+      id: 8,
+      src: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&h=600&fit=crop",
+      title: "Data Streams",
+      category: "Technology"
+    },
+    {
+      id: 9,
+      src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=600&fit=crop",
+      title: "Digital Horizon",
+      category: "Space"
+    },
+    {
+      id: 10,
+      src: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=600&fit=crop",
+      title: "Innovation Lab",
+      category: "Technology"
     }
   ];
 
-  // Particle animation effect
+  // Initialize likes with random values
+  useEffect(() => {
+    const initialLikes: { [key: number]: number } = {};
+    const initialUserLikes: { [key: number]: boolean } = {};
+    
+    images.forEach(image => {
+      initialLikes[image.id] = Math.floor(Math.random() * 500) + 50;
+      initialUserLikes[image.id] = false;
+    });
+    
+    setLikes(initialLikes);
+    setUserLikes(initialUserLikes);
+  }, []);
+
+  const handleLike = (imageId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    setUserLikes(prev => ({
+      ...prev,
+      [imageId]: !prev[imageId]
+    }));
+    
+    setLikes(prev => ({
+      ...prev,
+      [imageId]: prev[imageId] + (userLikes[imageId] ? -1 : 1)
+    }));
+  };
+
+  // Particle animation effect with new color scheme
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -94,7 +144,7 @@ const Index = () => {
 
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 255, 255, ${particle.opacity})`;
+        ctx.fillStyle = `rgba(0, 127, 255, ${particle.opacity})`;
         ctx.fill();
 
         // Draw connections
@@ -107,7 +157,7 @@ const Index = () => {
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(otherParticle.x, otherParticle.y);
-            ctx.strokeStyle = `rgba(0, 255, 255, ${0.2 * (1 - distance / 100)})`;
+            ctx.strokeStyle = `rgba(0, 127, 255, ${0.2 * (1 - distance / 100)})`;
             ctx.stroke();
           }
         });
@@ -128,7 +178,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden relative">
+    <div className="min-h-screen bg-gray-900 text-white overflow-hidden relative" style={{ backgroundColor: '#0C1C3D' }}>
       {/* Animated Background Canvas */}
       <canvas
         ref={canvasRef}
@@ -136,33 +186,33 @@ const Index = () => {
       />
 
       {/* Gradient Overlay */}
-      <div className="fixed inset-0 bg-gradient-to-br from-purple-900/20 via-black to-cyan-900/20 z-10 pointer-events-none" />
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-900/20 via-gray-900 to-blue-800/20 z-10 pointer-events-none" />
 
       {/* Header */}
       <header className="relative z-20 p-8 text-center">
-        <h1 className="text-6xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4 animate-pulse">
-          NEURAL GALLERY
+        <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-400 via-blue-300 to-blue-500 bg-clip-text text-transparent mb-4 animate-pulse font-sans">
+          MILESTONE-MOMENTS
         </h1>
-        <p className="text-xl text-gray-300 opacity-80">
-          Explore the Digital Dimension
+        <p className="text-xl text-gray-300 opacity-80 font-sans">
+          Capture • Share • Celebrate
         </p>
-        <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 to-purple-400 mx-auto mt-4 rounded-full animate-pulse" />
+        <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-blue-600 mx-auto mt-4 rounded-full animate-pulse" />
       </header>
 
       {/* Gallery Grid */}
       <main className="relative z-20 p-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
           {images.map((image, index) => (
             <div
               key={image.id}
-              className="group relative overflow-hidden rounded-2xl bg-gray-900/50 backdrop-blur-sm border border-cyan-500/20 hover:border-cyan-400/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/25 animate-fadeInUp"
+              className="group relative overflow-hidden rounded-2xl bg-gray-800/50 backdrop-blur-sm border border-blue-500/20 hover:border-blue-400/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 animate-fadeInUp"
               style={{
                 animationDelay: `${index * 0.1}s`
               }}
               onClick={() => setSelectedImage(image.id)}
             >
               {/* Image Container */}
-              <div className="relative overflow-hidden aspect-[4/3]">
+              <div className="relative overflow-hidden aspect-square">
                 <img
                   src={image.src}
                   alt={image.title}
@@ -173,34 +223,51 @@ const Index = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
                 
                 {/* Scan Line Effect */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/10 to-transparent translate-y-full group-hover:translate-y-[-100%] transition-transform duration-1000" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-400/10 to-transparent translate-y-full group-hover:translate-y-[-100%] transition-transform duration-1000" />
               </div>
 
               {/* Content */}
-              <div className="p-6">
+              <div className="p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs uppercase tracking-wider text-cyan-400 font-mono">
+                  <span className="text-xs uppercase tracking-wider text-blue-400 font-mono font-semibold">
                     {image.category}
                   </span>
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                    <div className="w-2 h-2 bg-blue-300 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-white group-hover:text-cyan-400 transition-colors duration-300">
+                <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors duration-300 font-sans">
                   {image.title}
                 </h3>
-                <div className="mt-4 flex items-center space-x-2 text-sm text-gray-400 font-mono">
-                  <span>▶</span>
-                  <span>RENDER_COMPLETE</span>
-                  <div className="flex-1 h-px bg-gradient-to-r from-cyan-400/50 to-transparent" />
+                
+                {/* Like Button */}
+                <div className="mt-3 flex items-center justify-between">
+                  <button
+                    onClick={(e) => handleLike(image.id, e)}
+                    className="flex items-center space-x-2 transition-all duration-200 hover:scale-110"
+                  >
+                    <Heart
+                      className={`w-5 h-5 transition-colors duration-200 ${
+                        userLikes[image.id] 
+                          ? 'text-red-500 fill-red-500' 
+                          : 'text-gray-400 hover:text-red-400'
+                      }`}
+                    />
+                    <span className="text-sm text-gray-300 font-mono">
+                      {likes[image.id] || 0}
+                    </span>
+                  </button>
+                  <div className="text-xs text-blue-400 font-mono">
+                    ▶ MOMENT_SAVED
+                  </div>
                 </div>
               </div>
 
               {/* Hover Glow Effect */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-pink-500/5 rounded-2xl" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-blue-400/5 to-blue-600/5 rounded-2xl" />
               </div>
             </div>
           ))}
@@ -217,7 +284,7 @@ const Index = () => {
             <img
               src={images.find(img => img.id === selectedImage)?.src}
               alt={images.find(img => img.id === selectedImage)?.title}
-              className="max-w-full max-h-full object-contain rounded-xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/20"
+              className="max-w-full max-h-full object-contain rounded-xl border border-blue-500/30 shadow-2xl shadow-blue-500/20"
             />
             <button
               onClick={() => setSelectedImage(null)}
@@ -225,17 +292,36 @@ const Index = () => {
             >
               ×
             </button>
+            
+            {/* Modal Like Button */}
+            <div className="absolute bottom-4 left-4 flex items-center space-x-3">
+              <button
+                onClick={(e) => handleLike(selectedImage, e)}
+                className="flex items-center space-x-2 bg-black/50 backdrop-blur-sm rounded-full px-4 py-2 transition-all duration-200 hover:scale-110"
+              >
+                <Heart
+                  className={`w-6 h-6 transition-colors duration-200 ${
+                    userLikes[selectedImage] 
+                      ? 'text-red-500 fill-red-500' 
+                      : 'text-gray-400 hover:text-red-400'
+                  }`}
+                />
+                <span className="text-lg text-white font-mono">
+                  {likes[selectedImage] || 0}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Floating Elements */}
       <div className="fixed top-20 right-8 z-30 space-y-4">
-        <div className="w-12 h-12 border border-cyan-400/30 rounded-lg backdrop-blur-sm bg-black/20 flex items-center justify-center">
-          <div className="w-2 h-2 bg-cyan-400 rounded-full animate-ping" />
+        <div className="w-12 h-12 border border-blue-400/30 rounded-lg backdrop-blur-sm bg-black/20 flex items-center justify-center">
+          <div className="w-2 h-2 bg-blue-400 rounded-full animate-ping" />
         </div>
-        <div className="w-12 h-12 border border-purple-400/30 rounded-lg backdrop-blur-sm bg-black/20 flex items-center justify-center">
-          <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+        <div className="w-12 h-12 border border-blue-500/30 rounded-lg backdrop-blur-sm bg-black/20 flex items-center justify-center">
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
         </div>
       </div>
 
