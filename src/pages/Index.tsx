@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 
 const Index = () => {
@@ -156,10 +155,9 @@ const Index = () => {
           {images.map((image, index) => (
             <div
               key={image.id}
-              className="group relative overflow-hidden rounded-2xl bg-gray-900/50 backdrop-blur-sm border border-cyan-500/20 hover:border-cyan-400/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/25"
+              className="group relative overflow-hidden rounded-2xl bg-gray-900/50 backdrop-blur-sm border border-cyan-500/20 hover:border-cyan-400/50 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/25 animate-fadeInUp"
               style={{
-                animationDelay: `${index * 0.1}s`,
-                animation: 'fadeInUp 0.8s ease-out forwards'
+                animationDelay: `${index * 0.1}s`
               }}
               onClick={() => setSelectedImage(image.id)}
             >
@@ -242,7 +240,7 @@ const Index = () => {
       </div>
 
       {/* Custom Styles */}
-      <style jsx>{`
+      <style>{`
         @keyframes fadeInUp {
           from {
             opacity: 0;
@@ -265,6 +263,10 @@ const Index = () => {
         
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
+        }
+        
+        .animate-fadeInUp {
+          animation: fadeInUp 0.8s ease-out forwards;
         }
       `}</style>
     </div>
