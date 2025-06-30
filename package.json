@@ -7,12 +7,15 @@
     "preview": "vite preview",
     "deploy": "gh-pages -d dist"
   },
-  "homepage": "https://Anshuman-Rai-1004.github.io/Milestone-Moments",  // 👈 ADD THIS
+  {
+  "name": "milestone-moments",
+  "version": "0.1.0",
+  "homepage": "https://yourusername.github.io/Milestone-Moments",
   "devDependencies": {
-    "gh-pages": "^5.0.0",
-    ...
+    "gh-pages": "^6.1.1"
   }
-}
+
+  },
 
 {
   "name": "vite_react_shadcn_ts",
